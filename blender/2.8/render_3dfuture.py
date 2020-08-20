@@ -31,6 +31,7 @@ bpy.ops.object.shade_smooth() # Option1: Gouraud shading
 # edgeNormals(mesh, angle = 10) # Option3: Edge normal shading
 
 ## subdivision 
+## Warning: may cause visual artifacts for 3D-FUTURE!
 # subdivision(mesh, level = 2)
 
 ###########################################
@@ -45,7 +46,7 @@ setMat_singleColor(mesh, meshColor, AOStrength = 0.5)
 # For texture image
 # useless = (0,0,0,1)
 # meshColor = colorObj(useless, 0.5, 1.0, 1.0, 0.0, 0.0)
-# texturePath = '../meshes/texture.png' 
+# texturePath = '../../meshes/texture.png' 
 # # using relative path gives us weired bug...
 # setMat_texture(mesh, texturePath, meshColor)
 
