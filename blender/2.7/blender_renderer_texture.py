@@ -79,6 +79,13 @@ class BaseRenderer:
 
     def __init__(self):
         # bpy.data.scenes['Scene'].render.engine = 'CYCLES'
+        bpy.context.scene.render.engine = 'CYCLES'
+        for object in bpy.context.scene.objects:
+            if object.name in ['Camera']:
+                object.select = False
+            else:
+                object.select = False
+                object.cycles_visibility.shadow = False
         # bpy.context.scene.cycles.device = 'GPU'
         # bpy.context.user_preferences.system.compute_device_type = 'CUDA'
         # bpy.context.user_preferences.system.compute_device = 'CUDA_1'
@@ -114,7 +121,7 @@ class BaseRenderer:
         world.horizon_color = (1, 1, 1)  # set background color to be white
 
         # set file name for storing rendering result
-        self.result_fn = '%s/render_result_%d.png' % (cfg.DIR.RENDERING_PATH, os.getpid())
+        self.result_fn = '%s/render_result_%d.png' % (RENDERING_PATH, os.getpid())
         bpy.context.scene.render.filepath = self.result_fn
 
         self.render_context = render_context
@@ -134,9 +141,9 @@ class BaseRenderer:
     def setViewpoint(self, azimuth, altitude, yaw, distance_ratio, fov):
         self.org_obj.rotation_euler = (0, 0, 0)
         self.light.location = (distance_ratio *
-                               (cfg.RENDERING.MAX_CAMERA_DIST + 2), 0, 0)
+                               (MAX_CAMERA_DIST + 2), 0, 0)
         self.camera.location = (distance_ratio *
-                                cfg.RENDERING.MAX_CAMERA_DIST, 0, 0)
+                                MAX_CAMERA_DIST, 0, 0)
         self.org_obj.rotation_euler = (radians(-yaw),
                                        radians(-altitude),
                                        radians(-azimuth))
@@ -184,6 +191,17 @@ class BaseRenderer:
         else:
             raise Exception("Loading failed: %s Model loading for type %s not Implemented" %
                             (file_path, file_path[-4:]))
+
+        # load texture 
+        bpy.data.materials.new('UVTexture')
+        bpy.data.materials['UVTexture'].use_nodes = True
+        texture_tree = bpy.data.materials['UVTexture'].node_tree
+        texture_links = texture_tree.links
+        texture_node = texture_tree.nodes.new("ShaderNodeTexImage")
+        texture_file = file_path.replace('normalized_model.obj', 'texture.png')
+        texture_node.image = bpy.data.images.load(texture_file)
+        texture_links.new(texture_node.outputs[0], texture_tree.nodes['Diffuse BSDF'].inputs[0])
+        bpy.data.scenes['Scene'].render.layers['RenderLayer'].material_override = bpy.data.materials['UVTexture']
 
     def render(self, load_model=True, clear_model=True, resize_ratio=None,
                return_image=True, image_path = ''):
