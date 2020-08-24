@@ -8,6 +8,20 @@ cwd = os.getcwd()
 Follow the instructions in "tutorial.py" if you want to adjust the model
 '''
 
+def snap_model_to_ground(mesh, groundLocation = 0):
+	verts = [vert.co for vert in mesh.data.vertices]
+	min_z = 100000
+	for vert in verts:
+		vert = vert.to_tuple()
+		if vert[1] < min_z:
+			min_z = vert[1]
+	print(min_z)
+	ori_location = mesh.location
+	scale_z = mesh.scale[2]
+	ori_location[2] = (0 - min_z) * scale_z + groundLocation  # 0 is default center
+	mesh.location = ori_location
+	bpy.context.view_layer.update()
+
 outputPath = 'D:\\tools\\RenderingScript\\blender\\2.8\\results' # make it abs path for windows
 
 ## initialize blender
@@ -24,6 +38,7 @@ rotation = (90, 0, 135) # (UI: click mesh > Transform > Rotation)
 scale = (0.6,0.6,0.6) # (UI: click mesh > Transform > Scale)
 # mesh = readPLY(meshPath, location, rotation, scale)
 mesh = readOBJ(meshPath, location, rotation, scale) 
+snap_model_to_ground(mesh)  # ensure the model contact ground
 
 ## set shading (choose one of them)
 bpy.ops.object.shade_smooth() # Option1: Gouraud shading
